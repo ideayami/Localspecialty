@@ -1,0 +1,426 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>ご当地名物帖</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* Layout: 地方ごとの見出し + 都道府県カード(JISコード順)。上部に検索と地方ジャンプを固定 */
+:root {
+  --bg: #eef1f3;
+  --surface: #fafbfc;
+  --fg: #1c2a38;
+  --muted: #5d6c7a;
+  --line: #d3dae0;
+  --accent: #23497a;
+  --accent-ink: #ffffff;
+  --chip-food: #e3ecf6;
+  --chip-food-fg: #1d3f68;
+  --chip-sweet: #f6e6ea;
+  --chip-sweet-fg: #7a2c42;
+  --chip-craft: #e4efe6;
+  --chip-craft-fg: #285a37;
+  --r-hokkaido: #3f86bd;
+  --r-tohoku: #2f8c80;
+  --r-kanto: #b87a2c;
+  --r-chubu: #7060ab;
+  --r-kinki: #b84d62;
+  --r-chugoku: #7a8a2e;
+  --r-shikoku: #2f85a6;
+  --r-kyushu: #c85e2e;
+  --font-display: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101820;
+    --surface: #172330;
+    --fg: #e4ebf1;
+    --muted: #98a7b5;
+    --line: #2b3b4b;
+    --accent: #7fb0ea;
+    --accent-ink: #0f1a26;
+    --chip-food: #1f3550;
+    --chip-food-fg: #bcd6f2;
+    --chip-sweet: #442631;
+    --chip-sweet-fg: #f1c3d0;
+    --chip-craft: #223c2b;
+    --chip-craft-fg: #bfe3c9;
+    --r-hokkaido: #6aaee0;
+    --r-tohoku: #5bbcae;
+    --r-kanto: #e2a557;
+    --r-chubu: #a396dc;
+    --r-kinki: #e07f92;
+    --r-chugoku: #aebd5c;
+    --r-shikoku: #62b3d4;
+    --r-kyushu: #ec8a58;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101820;
+  --surface: #172330;
+  --fg: #e4ebf1;
+  --muted: #98a7b5;
+  --line: #2b3b4b;
+  --accent: #7fb0ea;
+  --accent-ink: #0f1a26;
+  --chip-food: #1f3550;
+  --chip-food-fg: #bcd6f2;
+  --chip-sweet: #442631;
+  --chip-sweet-fg: #f1c3d0;
+  --chip-craft: #223c2b;
+  --chip-craft-fg: #bfe3c9;
+  --r-hokkaido: #6aaee0;
+  --r-tohoku: #5bbcae;
+  --r-kanto: #e2a557;
+  --r-chubu: #a396dc;
+  --r-kinki: #e07f92;
+  --r-chugoku: #aebd5c;
+  --r-shikoku: #62b3d4;
+  --r-kyushu: #ec8a58;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.7;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 56px;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--bg);
+  z-index: 20;
+}
+.wrap { max-width: 1120px; margin: 0 auto; }
+
+header.top { padding-block: 40px 20px; }
+.kicker { font-size: 12px; letter-spacing: .18em; color: var(--muted); margin: 0 0 8px; }
+h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(34px, 7vw, 60px);
+  line-height: 1.15;
+  margin: 0 0 12px;
+  text-wrap: balance;
+  letter-spacing: .02em;
+}
+.lead { max-width: 36em; margin: 0; color: var(--muted); }
+.lead b { color: var(--fg); font-variant-numeric: tabular-nums; }
+
+.bar {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 10;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  padding-block: 12px;
+  display: grid;
+  gap: 10px;
+}
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0; }
+.search {
+  flex: 1 1 240px;
+  min-width: 0;
+  font: inherit;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 9px 12px;
+}
+.search::placeholder { color: var(--muted); }
+button, .jump {
+  font: inherit;
+  font-size: 13px;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 13px;
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 1.6;
+}
+button[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+.jump { display: inline-flex; align-items: center; gap: 6px; }
+.jump i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); display: inline-block; }
+button:focus-visible, .jump:focus-visible, .search:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.jumps { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+.jumps .jump { flex: 0 0 auto; }
+.status { font-size: 13px; color: var(--muted); margin: 0; }
+
+section.region { padding-top: 40px; scroll-margin-top: 170px; }
+.region h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 26px;
+  margin: 0 0 16px;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-bottom: 2px solid var(--c);
+  padding-bottom: 6px;
+}
+.region h2 small {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: .08em;
+  color: var(--muted);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 14px;
+  align-items: start;
+}
+article.pref {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 16px 16px 14px;
+  min-width: 0;
+}
+.head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.code {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--c);
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+.head h3 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1.3;
+  margin: 0;
+}
+.head .en { font-size: 11px; letter-spacing: .14em; color: var(--muted); text-transform: uppercase; }
+.cat { margin-top: 10px; }
+.cat .lab { font-size: 11px; letter-spacing: .14em; color: var(--muted); margin: 0 0 5px; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 0; padding: 0; list-style: none; }
+.chips li {
+  font-size: 13px;
+  line-height: 1.45;
+  padding: 3px 9px;
+  border-radius: 3px;
+  overflow-wrap: anywhere;
+}
+.g li { background: var(--chip-food); color: var(--chip-food-fg); }
+.s li { background: var(--chip-sweet); color: var(--chip-sweet-fg); }
+.c li { background: var(--chip-craft); color: var(--chip-craft-fg); }
+.empty { padding: 40px 0; color: var(--muted); }
+footer { margin-top: 56px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <p class="kicker">47 PREFECTURES / LOCAL SPECIALTIES</p>
+    <h1>ご当地名物帖</h1>
+    <p class="lead">北海道から沖縄まで、各都道府県のグルメ、お菓子・土産、工芸品をまとめました。収録は全部で <b id="total">0</b> 品です。番号は都道府県コード(JIS)に対応しています。</p>
+  </header>
+
+  <div class="bar">
+    <div class="row">
+      <input id="q" class="search" type="search" placeholder="県名や名物で検索(例: うどん、焼)" autocomplete="off" aria-label="検索">
+    </div>
+    <div class="row" id="cats" role="group" aria-label="種類で絞り込み">
+      <button type="button" data-cat="all" aria-pressed="true">すべて</button>
+      <button type="button" data-cat="g" aria-pressed="false">グルメ</button>
+      <button type="button" data-cat="s" aria-pressed="false">お菓子・土産</button>
+      <button type="button" data-cat="c" aria-pressed="false">工芸品</button>
+    </div>
+    <div class="row jumps" id="jumps" aria-label="地方へ移動"></div>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+  </div>
+
+  <main id="main"></main>
+  <footer>名物は代表的なものを中心に載せています。販売状況や旬は時期や店舗で変わります。</footer>
+</div>
+
+<script>
+var REGIONS = [
+  ["hokkaido", "北海道", "HOKKAIDO"],
+  ["tohoku", "東北", "TOHOKU"],
+  ["kanto", "関東", "KANTO"],
+  ["chubu", "中部", "CHUBU"],
+  ["kinki", "近畿", "KINKI"],
+  ["chugoku", "中国", "CHUGOKU"],
+  ["shikoku", "四国", "SHIKOKU"],
+  ["kyushu", "九州・沖縄", "KYUSHU / OKINAWA"]
+];
+
+/* コード | 県名 | ローマ字 | 地方 | グルメ | お菓子・土産 | 工芸品  (各項目は「、」区切り) */
+var RAW = [
+"01|北海道|Hokkaido|hokkaido|札幌味噌ラーメン、函館塩ラーメン、旭川ラーメン、ジンギスカン、スープカレー、海鮮丼、石狩鍋、ザンギ、帯広の豚丼、いくら、ホタテ、毛ガニ、夕張メロン、じゃがバター、とうもろこし、ホッケ|白い恋人、マルセイバターサンド、ロイズ生チョコレート、じゃがポックル、三方六、よいとまけ、夕張メロンゼリー、北海道バターサンド|木彫りの熊、小樽ガラス、アイヌ刺繍、二風谷イタ(盆)",
+"02|青森県|Aomori|tohoku|りんご、にんにく、せんべい汁、味噌カレー牛乳ラーメン、煮干しラーメン、大間のマグロ、ホタテ、いちご煮、けの汁、貝焼き味噌、十三湖のしじみ、八戸前沖さば、青森シャモロック、イカ刺し|アップルパイ、りんごジュース、南部せんべい、りんごカレー|津軽塗、こぎん刺し、津軽びいどろ、津軽凧、南部裂織",
+"03|岩手県|Iwate|tohoku|わんこそば、盛岡冷麺、盛岡じゃじゃ麺、前沢牛、ひっつみ、いちご煮、三陸わかめ、短角牛、福田パン、ほやの刺身、三陸の牡蠣、せんべい汁|南部せんべい、かもめの玉子、岩谷堂羊羹、くるみゆべし、きみごのみ|南部鉄器、岩谷堂箪笥、浄法寺塗、秀衡塗、南部風鈴、ホームスパン",
+"04|宮城県|Miyagi|tohoku|牛タン焼き、ずんだ餅、笹かまぼこ、はらこ飯、牡蠣、ホヤ、仙台味噌、油麩丼、せり鍋、仙台冷やし中華、気仙沼のフカヒレ、三陸の銀鮭、仙台麩|萩の月、喜久福、ずんだシェイク、白松がもなか、支倉焼|宮城伝統こけし、雄勝硯、仙台箪笥、鳴子漆器、仙台堤焼、玉虫塗",
+"05|秋田県|Akita|tohoku|きりたんぽ鍋、稲庭うどん、いぶりがっこ、比内地鶏、しょっつる鍋、ハタハタ、横手焼きそば、だまこ餅、あきたこまち、じゅんさい、ババヘラアイス|もろこし、バター餅、金萬、いぶりがっこチーズ|大館曲げわっぱ、川連漆器、樺細工、秋田杉の桶樽、秋田八丈、浅舞絞",
+"06|山形県|Yamagata|tohoku|さくらんぼ(佐藤錦)、山形牛、米沢牛、芋煮、冷やしラーメン、玉こんにゃく、板そば、だだちゃ豆、ラ・フランス、山菜、納豆汁、冷やし肉そば|乃し梅、くじらもち、ラ・フランスのゼリー、だだちゃ豆スイーツ|山形鋳物、天童将棋駒、置賜紬、羽越しな布、山形仏壇、笹野一刀彫",
+"07|福島県|Fukushima|tohoku|喜多方ラーメン、会津ソースカツ丼、馬刺し、こづゆ、円盤餃子、いかにんじん、桃、きゅうり、南郷トマト、会津地鶏、わっぱ飯、ニシンの山椒漬け|薄皮饅頭、ままどおる、ゆべし、檸檬、酒饅頭|会津塗、会津木綿、赤べこ、大堀相馬焼、会津絵ろうそく、起き上がり小法師",
+"08|茨城県|Ibaraki|kanto|納豆、あんこう鍋、干し芋、メロン、れんこん、常陸牛、奥久慈しゃも、栗、けんちんそば、そぼろ納豆、いちご、鮟肝|水戸の梅、栗菓子、干し芋スイーツ、納豆せんべい、メロンゼリー|笠間焼、結城紬、真壁石燈籠",
+"09|栃木県|Tochigi|kanto|宇都宮餃子、いちご(とちおとめ)、かんぴょう、日光ゆば、しもつかれ、佐野ラーメン、日光の天然氷かき氷、那須の乳製品、栃木和牛、ニラ、ゆば料理|レモン牛乳、日光ゆばせんべい、いちごスイーツ、那須バター、かんぴょう巻、日光羊羹|益子焼、日光彫、烏山和紙、結城紬、大谷石細工、鹿沼組子",
+"10|群馬県|Gunma|kanto|焼きまんじゅう、水沢うどん、おっきりこみ、こんにゃく、下仁田ねぎ、嬬恋キャベツ、上州牛、ひもかわうどん、登利平の鳥めし、ソースカツ丼、峠の釜めし|磯部せんべい、ガトーフェスタ ハラダ ラスク、こんにゃくゼリー、花豆の甘納豆、草津温泉まんじゅう|高崎だるま、桐生織、伊勢崎絣",
+"11|埼玉県|Saitama|kanto|草加せんべい、深谷ねぎ、川越のさつまいも、狭山茶、秩父わらじカツ丼、ぼたん鍋、加須うどん、行田ゼリーフライ、小松菜、いがまんじゅう、豚みそ丼、武蔵野うどん|十万石まんじゅう、草加せんべい、川越の芋菓子、五家宝、狭山茶スイーツ|岩槻人形、秩父銘仙、小川和紙、春日部桐箪笥",
+"12|千葉県|Chiba|kanto|落花生、梨、なめろう、さんが焼き、太巻き祭り寿司、勝浦タンタンメン、銚子の鯖、銚子の醤油、ハマグリ、房総びわ、アジのたたき、アサリ、海苔|ぴーなっつ最中、ピーナッツ煎餅、濡れ煎餅、バターピーナッツ、びわゼリー|房州うちわ、房州石",
+"13|東京都|Tokyo|kanto|もんじゃ焼き、江戸前寿司、深川めし、天ぷら、うなぎ蒲焼、どぜう鍋、佃煮、くさや、ちゃんこ鍋、立ち食いそば、島寿司|東京ばな奈、人形焼、雷おこし、舟和の芋ようかん、どら焼き(うさぎや)|江戸切子、江戸風鈴、江戸べっ甲、江戸小紋、江戸木版画、東京銀器、江戸扇子",
+"14|神奈川県|Kanagawa|kanto|崎陽軒のシウマイ、横浜家系ラーメン、サンマーメン、湘南しらす丼、小田原かまぼこ、三崎マグロ、牛鍋、横須賀海軍カレー、鎌倉野菜、あじの干物(小田原)|鳩サブレー、小田原の梅干し、箱根温泉まんじゅう、ありあけハーバー|箱根寄木細工、鎌倉彫、小田原提灯、横浜スカーフ、小田原漆器",
+"15|新潟県|Niigata|chubu|コシヒカリ、へぎそば、笹団子、栃尾の油揚げ、のっぺ、タレカツ丼、新潟イタリアン、佐渡の寒ぶり、南蛮エビ、日本酒、ル レクチエ、イタリアン焼きそば|笹団子、柿の種、浮き星、サラダホープ、笹だんご、ばかうけ|小千谷縮、燕の金属洋食器、塩沢紬、三条の打刃物、村上堆朱、越後上布",
+"16|富山県|Toyama|chubu|白えび、ホタルイカ、氷見のブリ、ます寿司、富山ブラックラーメン、昆布締め、呉羽梨、バイ貝、氷見うどん、昆布巻きかまぼこ、とろろ昆布|鱒寿司、月世界、昆布かまぼこ、白えびせんべい|高岡銅器、井波彫刻、越中和紙、越中福岡の菅笠、越中ガラス",
+"17|石川県|Ishikawa|chubu|金沢おでん、治部煮、加賀野菜、ハントンライス、能登牛、香箱ガニ、加能ガニ、金沢カレー、かぶらずし、金箔ソフト、のど黒、ぶり大根|長生殿、金箔菓子、柴舟、俵屋じめ飴|九谷焼、輪島塗、加賀友禅、金沢箔、加賀水引、山中漆器",
+"18|福井県|Fukui|chubu|越前ガニ、越前おろしそば、ヨーロッパ軒のソースカツ丼、焼き鯖寿司、へしこ、若狭ふぐ、小鯛ささ漬、水ようかん、福井梅、ボルガライス、若狭牛|水ようかん、羽二重餅、小鯛ささ漬、ふくいの梅干し|越前和紙、越前打刃物、越前漆器、若狭塗箸、越前焼、若狭めのう細工",
+"19|山梨県|Yamanashi|chubu|ほうとう、吉田のうどん、鳥もつ煮、あわびの煮貝、ぶどう、桃、ワイン、甲州小梅、馬刺し、さくらんぼ、すもも|桔梗信玄餅、くろ玉、月の雫、信玄餅アイス、桃ゼリー|甲州印伝、甲州水晶貴石細工、西嶋和紙、雨畑硯、郡内織",
+"20|長野県|Nagano|chubu|信州そば、野沢菜、おやき、馬刺し、りんご、信州味噌、山賊焼き、駒ヶ根ソースカツ丼、桜鍋、信州サーモン、蜂の子、寒天、五平餅|栗菓子(小布施)、雷鳥の里、りんごジャム、おやき、野沢菜漬け|南木曽ろくろ細工、飯山仏壇、木曽漆器、信州紬、内山紙、松本家具",
+"21|岐阜県|Gifu|chubu|飛騨牛、鮎の塩焼き、朴葉味噌、栗きんとん、五平餅、鶏ちゃん、高山ラーメン、けいちゃん、トマト、柿|栗きんとん、柿羊羹、鮎菓子、さるぼぼ、美濃柿菓子、飛騨牛まん|美濃焼、美濃和紙、関の刃物、飛騨春慶、一位一刀彫、飛騨さしこ",
+"22|静岡県|Shizuoka|chubu|静岡茶、うなぎ蒲焼(浜松)、浜松餃子、わさび、桜えび、静岡おでん、黒はんぺん、富士宮やきそば、みかん、生しらす、金目鯛、清水のマグロ|うなぎパイ、こっこ、安倍川餅、抹茶スイーツ、わさび漬け、柚餅子|駿河竹千筋細工、駿河漆器、駿河雛人形、遠州綿紬、浜松注染、伊豆 竹細工",
+"23|愛知県|Aichi|chubu|ひつまぶし、味噌煮込みうどん、味噌カツ、手羽先、あんかけスパ、台湾ラーメン、小倉トースト、きしめん、名古屋コーチン、天むす、どて煮、鬼まんじゅう|ういろう、坂角ゆかり、青柳ういろう、ぴよりん、えびせんべい|有松鳴海絞、瀬戸焼、常滑焼、名古屋仏壇、尾張七宝",
+"24|三重県|Mie|kinki|伊勢うどん、松阪牛、てこね寿司、伊勢海老、的矢かき、津ぎょうざ、松阪鶏焼肉、あおさ、伊賀牛、鳥羽の海女小屋料理|赤福、へんば餅、安永餅、関の戸、伊勢茶|伊賀組紐、伊賀焼、萬古焼、伊勢形紙、鈴鹿墨、伊勢春慶",
+"25|滋賀県|Shiga|kinki|近江牛、ふなずし、近江ちゃんぽん、赤こんにゃく、焼き鯖そうめん、サラダパン、のっぺいうどん、日野菜漬け、鴨鍋、鮎の佃煮、近江米|丁稚羊羹、バームクーヘン(クラブハリエ)、サラダパン|信楽焼、近江ちぢみ、彦根仏壇、近江上布、長浜縮緬",
+"26|京都府|Kyoto|kinki|京漬物(千枚漬け・しば漬け)、湯豆腐、京懐石、にしんそば、宇治抹茶、京野菜、鯖寿司、湯葉、九条ねぎ、賀茂なす、丹後のカニ|八ッ橋、阿闍梨餅、抹茶スイーツ、ちりめん山椒、おたべ、京飴|西陣織、京友禅、清水焼、京扇子、京うちわ、京漆器、京仏壇、丹後ちりめん",
+"27|大阪府|Osaka|kinki|たこ焼き、お好み焼き、串カツ、箱寿司、551蓬莱の豚まん、きつねうどん、肉吸い、いか焼き、かすうどん、泉州水なす|粟おこし、面白い恋人、りくろーおじさんのチーズケーキ、岩おこし|堺打刃物、大阪浪華錫器、大阪欄間、河内木綿、堺線香、大阪唐木指物",
+"28|兵庫県|Hyogo|kinki|神戸牛、明石焼(玉子焼)、そばめし、いかなごのくぎ煮、但馬牛、松葉ガニ、ぼっかけ、ぼたん鍋、淡路島たまねぎ、出石そば、姫路おでん、赤穂の塩|神戸風月堂のゴーフル、神戸バウムクーヘン、瓦せんべい、淡路島たまねぎスイーツ、神戸プリン|丹波焼、出石焼、豊岡杞柳細工、三木金物、播州そろばん、播州織",
+"29|奈良県|Nara|kinki|柿の葉寿司、三輪そうめん、奈良漬、大和茶、茶粥、吉野葛、大和肉鶏、古都華(いちご)、柿、飛鳥鍋|葛菓子、よもぎ餅、奈良漬、奈良の鹿せんべい、みむろ最中|奈良筆、奈良墨、高山茶筌、赤膚焼、奈良一刀彫、奈良晒",
+"30|和歌山県|Wakayama|kinki|紀州南高梅、和歌山ラーメン、めはり寿司、クエ、有田みかん、さんま寿司、しらす、高野豆腐、ごま豆腐、太刀魚、クジラ料理|梅干し、かげろう、柚子菓子、梅酒、みかんゼリー|紀州漆器、紀州備長炭、高野紙、紀州箪笥、紀州手毬",
+"31|鳥取県|Tottori|chugoku|松葉ガニ、二十世紀梨、砂丘らっきょう、牛骨ラーメン、鳥取和牛、白ねぎ、大山おこわ、あごのやき、とうふちくわ、スイカ|因幡の白うさぎ、二十世紀梨のお菓子、とうふちくわ、砂丘らっきょう|因州和紙、弓浜絣、牛ノ戸焼",
+"32|島根県|Shimane|chugoku|出雲そば(割子)、宍道湖のしじみ、のどぐろ、ぼてぼて茶、あごちくわ、隠岐の岩ガキ、仁多米、津和野の鯉料理、松江おでん|若草、山川、出雲ぜんざい、あごちくわ、島根和牛|石州和紙、布志名焼、雲州そろばん、出雲織、石見焼、石見神楽面",
+"33|岡山県|Okayama|chugoku|きびだんご、白桃、マスカット・オブ・アレキサンドリア、ままかり、ばら寿司、デミカツ丼、ひるぜん焼きそば、下津井のタコ、牛窓のオリーブ、ピオーネ|きびだんご、大手まんぢゅう、桃のゼリー、マスカット菓子|備前焼、児島デニム、倉敷帆布、勝山の染物、備中和紙、井原デニム",
+"34|広島県|Hiroshima|chugoku|広島風お好み焼き、牡蠣、もみじ饅頭、尾道ラーメン、穴子めし、汁なし担々麺、つけ麺、瀬戸田のレモン、がんす|もみじ饅頭、牡蠣の缶詰、レモンケーキ、生もみじ|熊野筆、宮島しゃもじ、福山琴、広島仏壇、宮島彫、川尻筆",
+"35|山口県|Yamaguchi|chugoku|ふぐ刺し・ふぐちり、瓦そば、岩国寿司、長州黒かしわ、くじら料理、仙崎かまぼこ、岩国れんこん、夏みかん、萩のウニ|外郎、夏みかん菓子、月でひろった卵、萩の夏みかんゼリー|萩焼、大内塗、赤間硯、岩国和紙、萩ガラス",
+"36|徳島県|Tokushima|shikoku|徳島ラーメン、阿波尾鶏、鳴門わかめ、鳴門金時、すだち、祖谷そば、鱧、半田そうめん、フィッシュカツ、そば米雑炊|滝の焼き餅、金長まんじゅう、鳴門金時スイーツ、すだちゼリー|阿波和紙、大谷焼、阿波藍染、阿波木偶",
+"37|香川県|Kagawa|shikoku|讃岐うどん、骨付鳥、しょうゆ豆、オリーブ牛、あんもち雑煮、小豆島そうめん、鯛めし、いりこ、オリーブ|和三盆、かまど、讃岐和三盆糖、オリーブオイル|丸亀うちわ、讃岐漆器、庵治石、保多織",
+"38|愛媛県|Ehime|shikoku|鯛めし(宇和島)、じゃこ天、みかん、いよかん、焼豚玉子飯(今治)、松山鮓、ポンジュース、媛っこ地鶏|一六タルト、坊っちゃん団子、みかんゼリー|砥部焼、今治タオル、大洲和紙、伊予絣、水引(伊予)、菊間瓦",
+"39|高知県|Kochi|shikoku|カツオのたたき、ゆず、土佐あかうし、ミョウガ、鍋焼きラーメン、うつぼ料理、屋台餃子、芋けんぴ、田舎寿司|芋けんぴ、ゆずジャム、土佐日記、ぼうしパン、ゆずの菓子|土佐和紙、土佐打刃物、土佐珊瑚細工、土佐凧",
+"40|福岡県|Fukuoka|kyushu|博多ラーメン(豚骨)、もつ鍋、水炊き、明太子、ごぼ天うどん、焼きラーメン、久留米ラーメン、八女茶、あまおう|博多通りもん、めんべい、二○加煎餅、梅ヶ枝餅、ひよ子|博多織、久留米絣、小石原焼、博多人形、八女提灯、柳川まり",
+"41|佐賀県|Saga|kyushu|佐賀牛、呼子のイカ、有明海苔、ムツゴロウ、シシリアンライス、佐賀ラーメン、嬉野温泉湯豆腐|丸ぼうろ、ブラックモンブラン、小城羊羹、嬉野茶|有田焼、伊万里焼、唐津焼、肥前吉田焼、鍋島焼、肥前和紙",
+"42|長崎県|Nagasaki|kyushu|ちゃんぽん、皿うどん、カステラ、角煮まん、トルコライス、五島うどん、ハトシ、ミルクセーキ|カステラ、びわゼリー、波佐見焼せんべい|波佐見焼、べっ甲細工、長崎ガラス細工、三川内焼、長崎ビードロ",
+"43|熊本県|Kumamoto|kyushu|馬刺し、熊本ラーメン、からし蓮根、いきなり団子、太平燕、あか牛、スイカ、デコポン|武者返し、陣太鼓、いきなり団子、からし蓮根|肥後象がん、小代焼、山鹿灯籠、い草製品",
+"44|大分県|Oita|kyushu|とり天、関あじ・関さば、だんご汁、別府冷麺、かぼす、豊後牛、やせうま、りゅうきゅう、鶏めし|ざびえる、かぼすゼリー、別府温泉まんじゅう、やせうま|別府竹細工、小鹿田焼、日田下駄",
+"45|宮崎県|Miyazaki|kyushu|宮崎牛、地鶏炭火焼、チキン南蛮、冷や汁、マンゴー、辛麺、釜揚げうどん、日向夏|チーズ饅頭、マンゴープリン、金柑スイーツ、日向夏ゼリー|都城大弓、綾の手織",
+"46|鹿児島県|Kagoshima|kyushu|黒豚、鶏飯(奄美)、さつま揚げ、白くま、きびなご、薩摩芋、かるかん、焼酎、ふくれ菓子|かるかん、白くま、さつまいも菓子、薩摩焼酎|薩摩焼、大島紬、薩摩切子、薩摩錫器、川辺仏壇、種子島 刃物",
+"47|沖縄県|Okinawa|kyushu|ゴーヤーチャンプルー、沖縄そば、ソーキそば、ラフテー、海ぶどう、タコライス、サーターアンダギー、ミミガー、ジーマーミ豆腐、島豆腐、沖縄ぜんざい|ちんすこう、紅芋タルト、黒糖、泡盛|琉球ガラス、紅型、壺屋焼、琉球漆器、琉球絣、ミンサー織、読谷山花織"
+];
+
+var LABELS = { g: "グルメ", s: "お菓子・土産", c: "工芸品" };
+var PREFS = RAW.map(function (line) {
+  var f = line.split("|");
+  var split = function (t) { return t.split("、").map(function (x) { return x.trim(); }).filter(Boolean); };
+  return { code: f[0], name: f[1], en: f[2], region: f[3], g: split(f[4]), s: split(f[5]), c: split(f[6]) };
+});
+
+var state = { q: "", cat: "all" };
+var main = document.getElementById("main");
+var statusEl = document.getElementById("status");
+var colorOf = function (id) { return "var(--r-" + id + ")"; };
+
+function el(tag, cls, text) {
+  var n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text != null) n.textContent = text;
+  return n;
+}
+
+var total = PREFS.reduce(function (n, p) { return n + p.g.length + p.s.length + p.c.length; }, 0);
+document.getElementById("total").textContent = total;
+
+var jumps = document.getElementById("jumps");
+REGIONS.forEach(function (r) {
+  var a = el("a", "jump", r[1]);
+  a.href = "#" + r[0];
+  var dot = el("i");
+  dot.style.setProperty("--c", colorOf(r[0]));
+  a.insertBefore(dot, a.firstChild);
+  jumps.appendChild(a);
+});
+
+function render() {
+  var q = state.q.trim().toLowerCase();
+  var cats = state.cat === "all" ? ["g", "s", "c"] : [state.cat];
+  main.textContent = "";
+  var shownPrefs = 0, shownItems = 0;
+
+  REGIONS.forEach(function (r) {
+    var sec = el("section", "region");
+    sec.id = r[0];
+    sec.style.setProperty("--c", colorOf(r[0]));
+    var grid = el("div", "grid");
+    var count = 0;
+
+    PREFS.filter(function (p) { return p.region === r[0]; }).forEach(function (p) {
+      var nameHit = q && (p.name.toLowerCase().indexOf(q) >= 0 || p.en.toLowerCase().indexOf(q) >= 0);
+      var blocks = [];
+      cats.forEach(function (k) {
+        var items = p[k].filter(function (t) { return !q || nameHit || t.toLowerCase().indexOf(q) >= 0; });
+        if (items.length) blocks.push([k, items]);
+      });
+      if (!blocks.length) return;
+
+      var card = el("article", "pref");
+      var head = el("div", "head");
+      head.appendChild(el("span", "code", p.code));
+      head.appendChild(el("h3", null, p.name));
+      head.appendChild(el("span", "en", p.en));
+      card.appendChild(head);
+      blocks.forEach(function (b) {
+        var wrap = el("div", "cat " + b[0]);
+        wrap.appendChild(el("p", "lab", LABELS[b[0]]));
+        var ul = el("ul", "chips");
+        b[1].forEach(function (t) { ul.appendChild(el("li", null, t)); });
+        wrap.appendChild(ul);
+        card.appendChild(wrap);
+        shownItems += b[1].length;
+      });
+      card.style.setProperty("--c", colorOf(r[0]));
+      grid.appendChild(card);
+      count++; shownPrefs++;
+    });
+
+    if (!count) return;
+    var h2 = el("h2", null, r[1]);
+    h2.appendChild(el("small", null, r[2] + " / " + count + "都道府県"));
+    sec.appendChild(h2);
+    sec.appendChild(grid);
+    main.appendChild(sec);
+  });
+
+  if (!shownPrefs) {
+    main.appendChild(el("p", "empty", "「" + state.q + "」に合う名物は見つかりませんでした。別のことばで試してください。"));
+  }
+  statusEl.textContent = shownPrefs + "都道府県 / " + shownItems + "品を表示中";
+}
+
+document.getElementById("q").addEventListener("input", function (e) {
+  state.q = e.target.value;
+  render();
+});
+document.getElementById("cats").addEventListener("click", function (e) {
+  var b = e.target.closest("button");
+  if (!b) return;
+  state.cat = b.getAttribute("data-cat");
+  Array.prototype.forEach.call(this.querySelectorAll("button"), function (x) {
+    x.setAttribute("aria-pressed", x === b ? "true" : "false");
+  });
+  render();
+});
+render();
+</script>
+
+</body></html>
